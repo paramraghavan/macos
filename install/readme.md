@@ -1,0 +1,2 @@
+- Bootstraps your Mac (Homebrew, Rosetta on Apple Silicon, Command Line Tools).
+- Installs tools in bulk (PyCharm, Git, Python/pyenv, JDK, Spark, Docker, AWS/Azure/GCloud CLIs, SnowSQL, jq, etc.), sets paths, and creates a ready-to-use Python venv with common packages.
