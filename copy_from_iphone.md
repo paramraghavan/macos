@@ -4,6 +4,9 @@ You can copy photos directly from your iPhone to a USB device using a compatible
 See youtube videos:
 - https://youtu.be/1l2wawDOzaQ **
 - https://youtu.be/CH9-DCjEzGk
+> 1. Photos application on Window
+> 2. Airdisk app on iPhone
+
 1. Connect your USB drive to your iPhone using a Lightning to USB adapter or a USB-C connector, depending on your iPhone model.
 2. Open the Photos app on your iPhone.
 3. Select the photos you want to copy (you can use "Select All" if desired).
