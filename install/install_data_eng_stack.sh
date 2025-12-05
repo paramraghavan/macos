@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Re-load brew in current shell (covers both Intel & Apple Silicon)
+echo "==> Loading Homebrew environment..."
 if [[ -d /opt/homebrew/bin ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -d /usr/local/bin ]]; then
   eval "$(/usr/local/bin/brew shellenv)"
+else
+  echo "Homebrew not found. Run bootstrap-mac-dev.sh first."
+  exit 1
 fi
 
-echo "==> Bulk install core CLI & utilities"
+echo "==> Core CLI (if somehow missing)..."
 brew install git gh jq wget curl tree make cmake openssl readline zlib
 
-echo "==> Git quick setup (edit if you want)"
-git config --global init.defaultBranch main
-git config --global pull.rebase false
-
-echo "==> Install Python toolchain via pyenv (clean isolation)"
+echo "==> Install pyenv + pyenv-virtualenv..."
 brew install pyenv pyenv-virtualenv
-# Add pyenv to shells
+
+# Add pyenv to zsh
 if ! grep -q 'pyenv init' "$HOME/.zshrc" 2>/dev/null; then
   {
     echo ''
@@ -28,6 +28,8 @@ if ! grep -q 'pyenv init' "$HOME/.zshrc" 2>/dev/null; then
     echo 'eval "$(pyenv virtualenv-init -)"'
   } >> "$HOME/.zshrc"
 fi
+
+# Add pyenv to bash
 if ! grep -q 'pyenv init' "$HOME/.bash_profile" 2>/dev/null; then
   {
     echo ''
@@ -38,74 +40,101 @@ if ! grep -q 'pyenv init' "$HOME/.bash_profile" 2>/dev/null; then
     echo 'eval "$(pyenv virtualenv-init -)"'
   } >> "$HOME/.bash_profile"
 fi
-# activate in current shell
+
+echo "==> Activating pyenv in current shell..."
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
-# Choose a stable Python (adjust if you prefer another)
 PYVER=3.11.9
-echo "==> Installing Python $PYVER via pyenv"
-pyenv install -s "$PYVER"
-pyenv virtualenv -f "$PYVER" dataeng
-pyenv global dataeng
+ENV_NAME=dataeng
 
-echo "==> PIP basics"
+echo "==> Installing Python $PYVER via pyenv (if needed)..."
+pyenv install -s "$PYVER"
+
+echo "==> Creating/overwriting virtualenv '$ENV_NAME'..."
+pyenv virtualenv -f "$PYVER" "$ENV_NAME"
+pyenv global "$ENV_NAME"
+
+echo "==> Upgrading pip basics..."
 pip install --upgrade pip wheel setuptools
 
-echo "==> Popular Python data/DE packages"
-pip install pandas pyarrow numpy scipy matplotlib jupyterlab ipykernel black ruff \
-            pyspark==3.5.1 \
-            requests tqdm rich
-# Cloud & DB connectors (pick what you use)
-pip install boto3 awscli \
-            snowflake-connector-python snowflake-snowpark-python \
-            sqlalchemy psycopg2-binary \
-            google-cloud-storage azure-storage-blob
+echo "==> Installing core Python data/DE packages..."
+pip install \
+  pandas \
+  pyarrow \
+  numpy \
+  scipy \
+  matplotlib \
+  jupyterlab \
+  ipykernel \
+  black \
+  ruff \
+  "pyspark==3.5.1" \
+  requests \
+  tqdm \
+  rich
 
-echo "==> Install JDK + Spark (for local dev/testing)"
+echo "==> Cloud & DB connectors..."
+pip install \
+  boto3 \
+  awscli \
+  snowflake-connector-python \
+  snowflake-snowpark-python \
+  sqlalchemy \
+  psycopg2-binary \
+  google-cloud-storage \
+  azure-storage-blob
+
+echo "==> Installing JDK 17 for Spark..."
 brew install openjdk@17
-# link JDK (Ventura sometimes needs explicit JAVA_HOME)
-sudo ln -sf /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true
+
+echo "==> Linking JDK into system JavaVirtualMachines (may require sudo)..."
+sudo ln -sf /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk \
+  /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true
+
 if ! grep -q 'JAVA_HOME' "$HOME/.zshrc" 2>/dev/null; then
-  echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 17)' >> "$HOME/.zshrc"
-  echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> "$HOME/.zshrc"
+  {
+    echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 17)'
+    echo 'export PATH="$JAVA_HOME/bin:$PATH"'
+  } >> "$HOME/.zshrc"
 fi
+
 if ! grep -q 'JAVA_HOME' "$HOME/.bash_profile" 2>/dev/null; then
-  echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 17)' >> "$HOME/.bash_profile"
-  echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> "$HOME/.bash_profile"
+  {
+    echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 17)'
+    echo 'export PATH="$JAVA_HOME/bin:$PATH"'
+  } >> "$HOME/.bash_profile"
 fi
 
-brew install apache-spark  # local Spark shell & submit
-# Scala/SBT optional (uncomment if you want the Scala side)
-# brew install scala sbt
+echo "==> Installing Apache Spark (local dev)..."
+brew install apache-spark
 
-echo "==> Docker Desktop (for local services)"
+echo "==> Docker Desktop (for local services)..."
 brew install --cask docker
 
-echo "==> Terminals & IDEs"
+echo "==> Terminals & IDEs (DE-focused)..."
 brew install --cask iterm2
-brew install --cask pycharm-ce   # Community; use 'pycharm' for Professional
-# VS Code optional:
+brew install --cask pycharm-ce
+# Uncomment if you want VS Code here too:
 # brew install --cask visual-studio-code
 
-echo "==> Cloud CLIs"
+echo "==> Cloud CLIs..."
 brew install awscli
-brew install --cask google-cloud-sdk
 brew install azure-cli
+brew install --cask google-cloud-sdk
 
-echo "==> Snowflake CLI (SnowSQL)"
-brew install --cask snowflake-snowsql || true  # falls back silently if cask changes
+echo "==> Snowflake CLI (SnowSQL)..."
+brew install --cask snowflake-snowsql || true  # ignore if cask name changes
 
-echo "==> Other helpful tools"
+echo "==> Other helpful DE tools..."
 brew install terraform kubectl k9s httpie yq
 
-echo "==> Create a ready-to-run Jupyter kernel for this env"
-python -m ipykernel install --user --name dataeng --display-name "Python (dataeng)"
+echo "==> Registering Jupyter kernel for this env..."
+python -m ipykernel install --user --name "$ENV_NAME" --display-name "Python ($ENV_NAME)"
 
-echo "==> Final notes"
-echo "• Close & reopen terminal to load PATH changes (or: source ~/.zshrc)"
-echo "• Launch PyCharm from Applications or: open -a 'PyCharm CE'"
-echo "• Start Docker Desktop from Applications before using containers"
-echo "• Your Python env is 'dataeng' (pyenv); pip installs went there"
+echo "==> Done: data engineering environment ready."
+echo "   • Restart terminal or: source ~/.zshrc"
+echo "   • Jupyter kernel: Python ($ENV_NAME)"
+echo "   • PyCharm can use pyenv interpreter: $ENV_NAME"
