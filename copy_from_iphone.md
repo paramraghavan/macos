@@ -1,33 +1,45 @@
 # Copy photos from iphone to computer or usb
 
-You can copy photos directly from your iPhone to a USB device using a compatible adapter and the Files app on your iPhone. Here’s how:
-See youtube videos:
-- https://youtu.be/1l2wawDOzaQ **
-- https://youtu.be/CH9-DCjEzGk
-> 1. Photos application on Window
-> 2. Airdisk app on iPhone
+To back up iPhone into folders on an external hard drive, the easiest and cleanest method
+is to use a built-in Mac app called **Image Capture**. Unlike the Mac "Photos" app (which lumps everything into one
+massive library file), Image Capture lets you pull the raw image files directly into any specific folder you choose.
 
-1. Connect your USB drive to your iPhone using a Lightning to USB adapter or a USB-C connector, depending on your iPhone model.
-2. Open the Photos app on your iPhone.
-3. Select the photos you want to copy (you can use "Select All" if desired).
-4. Tap the Share button and choose "Export Unmodified Original" or "Save to Files."
-5. In the Files app, choose your connected USB drive as the destination and tap "Save."
-6. Safely eject the USB drive from the Files app before disconnecting.
+Here is the step-by-step process for your Mac Studio:
 
-Some USB flash drives have companion apps (like SanDisk iXpand) that can facilitate faster or automatic transfers.
+### **Phase 1: Prepare Your Hard Drive**
 
-This method allows direct copying without the need for a computer intermediary, though selecting many photos at once may be tedious depending on your needs and iOS version.[1][2][3][4][5]
+1. **Plug in** your external hard drive to your Mac Studio.
+2. Open **Finder** and navigate to your external hard drive.
+3. Create a master folder (e.g., "iPhone Photo Backups").
+4. Inside that master folder, **create four separate folders** and name them so you know which is which (e.g., "Phone
+   1 - Personal", "Phone 2 - Work", etc.).
 
-[1](https://support.apple.com/en-afri/guide/iphone/iph480caa1f3/ios)
-[2](https://www.reddit.com/r/ios/comments/1d2b3cw/how_can_i_export_all_the_photos_and_videos_from/)
-[3](https://www.youtube.com/watch?v=_60Tt7zTgKw)
-[4](https://bulkmemorycards.com/transfer-photos-from-iphone/)
-[5](https://www.youtube.com/watch?v=jOJkXZxRntg)
-[6](https://www.youtube.com/watch?v=mxvYZBvbhFQ)
-[7](https://discussions.apple.com/thread/255853534)
-[8](https://richontech.tv/p/how-to-transfer-photos-from-iphone)
-[9](https://www.youtube.com/watch?v=ytSnP4XDeXM)
-[10](https://support.apple.com/guide/iphone/import-and-export-photos-and-videos-iph480caa1f3/ios)
-[11](https://www.instagram.com/reel/DMGiDWkzL_x/?hl=en)
-[12](https://learn.microsoft.com/en-us/answers/questions/4046596/all-i-want-to-do-is-transfer-my-photos-from-iphone)
-[13](https://techcommunity.microsoft.com/discussions/windows11/how-to-transfer-iphone-photos-to-external-hard-drive-with-windows-11/4367464)
+### **Phase 2: The Transfer Process**
+
+*You will do this one phone at a time.*
+
+1. **Connect the first iPhone** to your Mac Studio using a USB/Lightning cable.
+2. **Unlock the iPhone.** You must keep the screen unlocked for the Mac to read the photos. If a prompt appears on the
+   phone asking to **"Trust This Computer,"** tap **Trust** and enter your passcode.
+3. On your Mac, open the **Image Capture** app. (You can find this quickly by pressing `Command + Spacebar` to open
+   Spotlight search, typing "Image Capture", and hitting Return).
+4. Look at the left sidebar in Image Capture. Under the **"Devices"** section, click on your iPhone. *Note: It may take
+   a minute or two to load all the thumbnails if you have thousands of photos.*
+5. Look at the bottom of the Image Capture window for a dropdown menu labeled **"Import To:"**.
+6. Click that dropdown, select **"Other..."**, and navigate to the specific folder you created on your external hard
+   drive for this exact phone. Click **Choose**.
+7. Click the **Download All** button in the bottom right corner.
+
+### **Phase 3: Repeat**
+
+1. Once the transfer is 100% complete, you can safely unplug the first phone.
+2. Plug in the second phone.
+3. Repeat the Image Capture process, making sure to change the **"Import To:"** destination to the *second* folder on
+   your hard drive.
+4. Repeat for phones 3 and 4.
+
+**A Quick Pro-Tip for Large Transfers:**
+If your phones have tens of thousands of photos, the transfer can take a while. Go into your iPhone settings (
+`Settings > Display & Brightness > Auto-Lock`) and set it to **"Never"** while you are doing this. If the phone screen
+goes to sleep and locks during a massive transfer, it can sometimes interrupt the connection to the Mac Studio. Just
+remember to change it back when you are done!
