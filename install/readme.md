@@ -1,3 +1,5 @@
 - Bootstraps your Mac (Homebrew, Rosetta on Apple Silicon, Command Line Tools).
 - Installs tools in bulk (PyCharm, Git, Python/pyenv, JDK, Spark, Docker, AWS/Azure/GCloud CLIs, SnowSQL, jq, etc.), sets paths, and creates a ready-to-use Python venv with common packages.
 - [Display Link Manager](https://www.synaptics.com/products/displaylink-graphics/downloads/macos)
+- ./add_sshkey_githun.sh youremail@mail.com
+- ./clone_all_repos.sh --dir ~/dev --https
