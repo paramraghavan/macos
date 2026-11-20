@@ -4,7 +4,7 @@ Helps someone coming from Windows: recover a forgotten Mac login password, and m
 
 | File | What it does |
 |---|---|
-| [`make-mac-windows-like.sh`](make-mac-windows-like.sh) | Applies Windows-style settings (Finder, scrolling, right-click, Dock, snapping, Home/End keys, screenshots) and installs AltTab, Rectangle, Chrome, Edge and VS Code. Backs up your settings first; `--undo` puts everything back |
+| [`make-mac-windows-like.sh`](make-mac-windows-like.sh) | Applies Windows-style settings (Finder, scrolling, right-click, Dock, snapping, Home/End keys, screenshots) and installs AltTab, Rectangle, Chrome, Edge and VS Code. Optional `--with-ubar` adds the uBar taskbar. Backs up your settings first; `--undo` puts everything back |
 | [`reset-user-password.sh`](reset-user-password.sh) | From an admin account, resets the password of *another* user on the Mac |
 | [`admin_recovery_steps.md`](admin_recovery_steps.md) | Step-by-step recovery of a forgotten **admin** login password |
 
@@ -22,9 +22,12 @@ chmod +x make-mac-windows-like.sh
 Options:
 
 ```bash
-./make-mac-windows-like.sh --no-apps   # settings only, install nothing
-./make-mac-windows-like.sh --undo      # restore all macOS defaults
+./make-mac-windows-like.sh --no-apps     # settings only, install nothing
+./make-mac-windows-like.sh --with-ubar   # also install uBar (Windows-style taskbar) and hide the Dock
+./make-mac-windows-like.sh --undo        # restore all macOS defaults (brings the Dock back)
 ```
+
+Options can be combined, e.g. `--no-apps --with-ubar` installs only uBar plus the settings.
 
 Don't run it with `sudo`. It changes settings for the user who runs it. If Homebrew (the Mac's package manager, like winget) isn't installed, the script installs it and asks for your Mac password once.
 
@@ -39,6 +42,7 @@ Don't run it with `sudo`. It changes settings for the user who runs it. If Homeb
 | Keyboard | Home/End go to start/end of the **line** and Ctrl+Home/End to top/bottom, in most Mac apps |
 | Screenshots | Saved to `Pictures/Screenshots` |
 | Apps | **AltTab** (Windows-style Alt+Tab with window previews), **Rectangle** (snap windows to halves/quarters with shortcuts), Chrome, Edge, VS Code |
+| Taskbar (only with `--with-ubar`) | Installs **uBar** and hides the Mac Dock so uBar is the only taskbar (⌘ ⌥ D still shows the Dock) |
 
 ### After running it (only you can do these)
 
@@ -48,7 +52,51 @@ Don't run it with `sudo`. It changes settings for the user who runs it. If Homeb
 
 ### Is there a free "Windows shell" for macOS?
 
-No. Unlike Windows, macOS doesn't let a third-party app replace its desktop (the menu bar at the top, the Dock, window buttons on the left). The closest you can get for free is what this script does: Windows-style settings plus **AltTab**, **Rectangle** and, if you want deeper keyboard remapping, **Karabiner-Elements** (`brew install --cask karabiner-elements`). For a real bottom taskbar with window buttons, **uBar** is the best-known option, but it's paid (free trial).
+No. Unlike Windows, macOS doesn't let a third-party app replace its desktop (the menu bar at the top, the Dock, window buttons on the left). The closest you can get for free is what this script does: Windows-style settings plus **AltTab**, **Rectangle** and, if you want deeper keyboard remapping, **Karabiner-Elements** (`brew install --cask karabiner-elements`). For a real bottom taskbar with window buttons, **uBar** is the best-known option, but it's paid (free trial). See below.
+
+### Optional: uBar, a Windows-style taskbar
+
+uBar puts a taskbar at the bottom of the screen with **one button per window**, a Start-style menu, a clock and window previews. It's a **paid app with a free trial**.
+
+**Install it** with the script:
+
+```bash
+./make-mac-windows-like.sh --with-ubar
+```
+
+That installs uBar through Homebrew (`brew install --cask ubar`) and hides the Mac Dock. If Homebrew can't find it, download uBar from the developer's site (Brawer Software).
+
+To do it by hand instead:
+1. Install uBar.
+2. Hide the Dock: System Settings → **Desktop & Dock** → *Automatically hide and show the Dock*: **On**.
+3. Optionally stop the Dock popping up at all:
+
+   ```bash
+   defaults write com.apple.dock autohide-delay -float 1000 && killall Dock
+   ```
+
+**Set it up to feel like Windows:**
+1. Allow it in System Settings → Privacy & Security → **Accessibility** (to control windows) and **Screen Recording** (for window previews).
+2. In uBar's preferences:
+   - position: **Bottom**
+   - group by **Window** (one button per window, like Windows)
+   - turn on the **Start-style menu**, **clock** and **window previews**
+   - turn on **Launch at login**
+3. Need the Dock for a moment? **⌘ ⌥ D** toggles it.
+
+**During the trial, check that:**
+- minimizing and restoring windows from uBar feels natural
+- it plays well with AltTab and Rectangle
+- it isn't using much CPU or memory (Activity Monitor)
+
+**Not buying it?**
+
+```bash
+./make-mac-windows-like.sh --undo   # brings the Dock back
+brew uninstall --cask ubar
+```
+
+Also remove uBar from System Settings → General → **Login Items** if it's still listed.
 
 ### Things macOS won't let you change
 

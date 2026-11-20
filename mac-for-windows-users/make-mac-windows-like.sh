@@ -6,6 +6,8 @@
 #
 #   ./make-mac-windows-like.sh            # apply settings + install helper apps
 #   ./make-mac-windows-like.sh --no-apps  # settings only, install nothing
+#   ./make-mac-windows-like.sh --with-ubar  # also install uBar (Windows-style taskbar,
+#                                           # paid app with free trial) and hide the Mac Dock
 #   ./make-mac-windows-like.sh --undo     # put every setting back to the macOS default
 #
 # Safe to re-run. Before changing anything it saves a backup of the current
@@ -16,11 +18,13 @@ set -u
 
 MODE="apply"
 INSTALL_APPS=1
+WITH_UBAR=0
 for arg in "$@"; do
   case "$arg" in
-    --undo)    MODE="undo" ;;
-    --no-apps) INSTALL_APPS=0 ;;
-    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
+    --undo)       MODE="undo" ;;
+    --no-apps)    INSTALL_APPS=0 ;;
+    --with-ubar)  WITH_UBAR=1 ;;
+    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
     *) echo "Unknown option: $arg (try --help)"; exit 1 ;;
   esac
 done
@@ -72,6 +76,13 @@ SETTINGS=(
   "com.apple.screencapture|location|string|$HOME/Pictures/Screenshots|Screenshots saved to Pictures/Screenshots"
 )
 
+# Only with --with-ubar: hide the Mac Dock so uBar is the only taskbar.
+# A 1000-second hover delay means the Dock effectively never pops up; Command+Option+D toggles it.
+UBAR_SETTINGS=(
+  "com.apple.dock|autohide|bool|true|Dock hides automatically (uBar replaces it)"
+  "com.apple.dock|autohide-delay|float|1000|Dock effectively never pops up (Cmd+Option+D shows it)"
+)
+
 BACKUP_DOMAINS="NSGlobalDomain com.apple.finder com.apple.dock com.apple.WindowManager com.apple.screencapture com.apple.AppleMultitouchTrackpad com.apple.driver.AppleBluetoothMultitouch.trackpad"
 KEYBINDINGS="$HOME/Library/KeyBindings/DefaultKeyBinding.dict"
 KEYBINDINGS_MARKER="// installed by make-mac-windows-like.sh"
@@ -105,11 +116,12 @@ delete_setting() {  # domain key
 # =============================================================================
 if [ "$MODE" = "undo" ]; then
   step "Restoring macOS defaults"
-  for entry in "${SETTINGS[@]}"; do
+  for entry in "${SETTINGS[@]}" "${UBAR_SETTINGS[@]}"; do
     IFS='|' read -r domain key type value desc <<< "$entry"
     delete_setting "$domain" "$key"
     ok "reset: $desc"
   done
+  pgrep -x uBar >/dev/null 2>&1 && osascript -e 'tell application "uBar" to quit' >/dev/null 2>&1
   if [ -f "$KEYBINDINGS" ] && grep -q "$KEYBINDINGS_MARKER" "$KEYBINDINGS"; then
     rm "$KEYBINDINGS"; ok "removed Windows-style Home/End keys"
   fi
@@ -117,6 +129,7 @@ if [ "$MODE" = "undo" ]; then
   echo
   echo "Done. Log out and back in for every change to take effect."
   echo "Apps installed by this script were left in place; remove them with: brew uninstall --cask <name>"
+  echo "  (uBar, if you tried it: brew uninstall --cask ubar - and remove it from Login Items)"
   echo "Backups of your earlier settings are in ~/.mac-windows-like-backup/"
   exit 0
 fi
@@ -141,6 +154,12 @@ for entry in "${SETTINGS[@]}"; do
   IFS='|' read -r domain key type value desc <<< "$entry"
   if write_setting "$domain" "$key" "$type" "$value"; then ok "$desc"; else echo "  ! couldn't set: $desc"; fi
 done
+if [ "$WITH_UBAR" -eq 1 ]; then
+  for entry in "${UBAR_SETTINGS[@]}"; do
+    IFS='|' read -r domain key type value desc <<< "$entry"
+    if write_setting "$domain" "$key" "$type" "$value"; then ok "$desc"; else echo "  ! couldn't set: $desc"; fi
+  done
+fi
 
 step "Windows-style Home / End keys"
 # Makes Home/End jump to the start/end of the LINE (Mac default: top/bottom of the document),
@@ -170,7 +189,7 @@ restart_ui
 # =============================================================================
 # APPS
 # =============================================================================
-if [ "$INSTALL_APPS" -eq 1 ]; then
+if [ "$INSTALL_APPS" -eq 1 ] || [ "$WITH_UBAR" -eq 1 ]; then
   step "Helper apps (via Homebrew)"
   if ! command -v brew >/dev/null 2>&1 && [ ! -x /opt/homebrew/bin/brew ] && [ ! -x /usr/local/bin/brew ]; then
     echo "  Homebrew (the Mac's 'winget') isn't installed. Installing it - it will ask for your Mac password."
@@ -184,12 +203,19 @@ if [ "$INSTALL_APPS" -eq 1 ]; then
     # alt-tab:   Windows-style Alt+Tab with window thumbnails
     # rectangle: Windows-style window snapping (halves, quarters, thirds) with keyboard shortcuts
     # google-chrome, microsoft-edge, visual-studio-code: familiar apps from Windows
-    for cask in alt-tab rectangle google-chrome microsoft-edge visual-studio-code; do
+    # ubar (only with --with-ubar): Windows-style taskbar - paid app with a free trial
+    CASKS=""
+    [ "$INSTALL_APPS" -eq 1 ] && CASKS="alt-tab rectangle google-chrome microsoft-edge visual-studio-code"
+    [ "$WITH_UBAR" -eq 1 ] && CASKS="$CASKS ubar"
+    for cask in $CASKS; do
       if brew list --cask "$cask" >/dev/null 2>&1; then ok "$cask already installed"
-      else brew install --cask "$cask" && ok "installed $cask"; fi
+      elif brew install --cask "$cask"; then ok "installed $cask"
+      else echo "  ! couldn't install $cask"
+           [ "$cask" = "ubar" ] && echo "    Download uBar from the developer's site (Brawer Software) instead."
+      fi
     done
-    open -a "AltTab" >/dev/null 2>&1
-    open -a "Rectangle" >/dev/null 2>&1
+    [ "$INSTALL_APPS" -eq 1 ] && { open -a "AltTab" >/dev/null 2>&1; open -a "Rectangle" >/dev/null 2>&1; }
+    [ "$WITH_UBAR" -eq 1 ] && open -a "uBar" >/dev/null 2>&1
   else
     echo "  ! Homebrew isn't available - skipped apps. Re-run after installing it from https://brew.sh"
   fi
@@ -207,7 +233,17 @@ cat <<'EOF'
  3. Using a WINDOWS keyboard? So that Ctrl+C copies:
     System Settings > Keyboard > Keyboard Shortcuts > Modifier Keys > pick the keyboard >
     Control key = Command, Command (Windows) key = Control.
- 4. Want a real Windows-style taskbar? The paid app uBar does that.
-
-To undo everything:  ./make-mac-windows-like.sh --undo
 EOF
+if [ "$WITH_UBAR" -eq 1 ]; then
+  cat <<'EOF'
+ 4. uBar (trial): allow it in Privacy & Security > Accessibility and Screen Recording.
+    In uBar's preferences: position Bottom, group by Window (one button per window),
+    turn on the Start-style menu, clock and window previews, and Launch at login.
+    The Mac Dock is now hidden - Command+Option+D shows it if you need it.
+    Not buying it? Run --undo (brings the Dock back), then: brew uninstall --cask ubar
+EOF
+else
+  echo " 4. Want a real Windows-style taskbar? Re-run with --with-ubar (paid app, free trial)."
+fi
+echo
+echo "To undo everything:  ./make-mac-windows-like.sh --undo"
