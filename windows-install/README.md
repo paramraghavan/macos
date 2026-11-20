@@ -2,6 +2,18 @@
 
 One PowerShell script, [`setup-windows.ps1`](setup-windows.ps1), that sets up a new Windows machine.
 
+**Laptop:** Acer Aspire Go 15.6" (i7-13620H, 16 GB DDR5, 512 GB). For first-day updates, performance settings, battery care (including getting the most hours on the move) and upkeep, see **[LAPTOP-CARE.md](LAPTOP-CARE.md)**.
+
+**Files in this folder**
+
+| File | What it's for |
+|---|---|
+| [`setup-windows.ps1`](setup-windows.ps1) | Installs all the apps, clones your repos, sets up PySpark |
+| [`remove-bloat.ps1`](remove-bloat.ps1) | Removes preinstalled trials and promo apps. Preview by default; `-Apply` to remove. Details in [LAPTOP-CARE.md](LAPTOP-CARE.md#4-removing-bloat-with-remove-bloatps1) |
+| [`LAPTOP-CARE.md`](LAPTOP-CARE.md) | Performance, battery, heat, storage and maintenance guide for this laptop |
+
+Suggested order on a new laptop: Windows Update → `remove-bloat.ps1` → `setup-windows.ps1`.
+
 ## What it does
 
 1. **Installs apps with winget** (Windows' built-in package manager): Google Chrome, VS Code (plus its Python and Jupyter extensions), OneDrive (usually already on Windows 11, so it's skipped there), Git for Windows (includes **Git Bash**), GitHub CLI, Python 3.12, Java 17 (Temurin). Spark needs Java.
