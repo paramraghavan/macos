@@ -3,6 +3,7 @@
 - [Display Link Manager](https://www.synaptics.com/products/displaylink-graphics/downloads/macos)
 - ./add_sshkey_githun.sh youremail@mail.com
 - ./clone_all_repos.sh --dir ~/dev --https
+  - Needs a GitHub token. Easiest: `GITHUB_PAT="$(gh auth token)" ./clone_all_repos.sh --dir ~/dev --https`. Getting "Personal Access Token not found"? See [Providing the token](clone_all_repos.md#providing-the-token-fixes-error-github-personal-access-token-not-found).
 
 ## Note: second user on the same Mac can't find Homebrew tools (`gh: command not found`)
 

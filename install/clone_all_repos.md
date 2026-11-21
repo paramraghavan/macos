@@ -207,19 +207,10 @@ echo "==> All repositories processed."
    chmod +x ~/bin/clone-all-github-repos.sh
    ```
 
-2. **Store your PAT safely**
-
-   **Option A – Env var**
+2. **Give the script your GitHub token.** See [Providing the token](#providing-the-token-fixes-error-github-personal-access-token-not-found) below. The quickest way, if `gh` is installed:
 
    ```bash
-   export GITHUB_PAT="ghp_yourtokenhere"
-   ```
-
-   **Option B – File (nicer for long-term)**
-
-   ```bash
-   echo "ghp_yourtokenhere" > ~/.github_pat
-   chmod 600 ~/.github_pat
+   GITHUB_PAT="$(gh auth token)" ./clone_all_repos.sh --dir ~/dev --https
    ```
 
 3. **Run it**
@@ -242,6 +233,66 @@ echo "==> All repositories processed."
       clone-all-github-repos.sh --org my-org --https --include-forks --dir ~/code/my-org
       ```
       
+## Providing the token (fixes "ERROR: GitHub Personal Access Token not found")
+
+The script looks for your GitHub token in two places, in this order:
+1. the environment variable `GITHUB_PAT`
+2. the file `~/.github_pat`
+
+If it finds neither, it stops with that error. Use **one** of these three ways.
+
+### Option 1 (easiest): borrow the token from `gh`
+
+Nothing to create or store. Log in to GitHub with `gh`, once:
+
+```bash
+gh auth login
+gh auth setup-git
+```
+
+Then run the script with gh's token:
+
+```bash
+GITHUB_PAT="$(gh auth token)" ./clone_all_repos.sh --dir ~/dev --https
+```
+
+`gh auth token` prints the token gh already saved in your keychain, and the script uses it for this run only. `gh auth setup-git` lets the `--https` clones use the same login, so git doesn't ask for a password.
+
+### Option 2: save a token in `~/.github_pat`
+
+1. **Create the token on GitHub** (details in [generate_github_pat.md](generate_github_pat.md)):
+   - Settings → Developer settings → **Fine-grained tokens** → **Generate new token**
+   - Resource owner: **your account**
+   - Repository access: **All repositories**
+   - Permissions: **Contents: Read** (Metadata: Read is added automatically)
+   - Click **Generate token** and **copy it**. GitHub only shows it once.
+2. **Save it to the file straight from the clipboard,** so the token never appears in your shell history. `chmod 600` makes the file readable only by you:
+
+   ```bash
+   pbpaste > ~/.github_pat && chmod 600 ~/.github_pat
+   ```
+
+3. **Run the script:**
+
+   ```bash
+   ./clone_all_repos.sh --dir ~/dev --https
+   ```
+
+### Option 3: set it for the current Terminal window only
+
+```bash
+read -rs GITHUB_PAT && export GITHUB_PAT
+```
+
+Paste the token and press Return. Nothing is shown and nothing is saved to history. Then run the script. The token is forgotten when you close the window.
+
+### Things to know
+
+- **Each Mac user needs their own:** `~/.github_pat` and the `gh` login are per user. A second user on the same Mac needs their own token or their own `gh auth login`.
+- **SSH vs HTTPS:** without `--https`, the script clones over SSH. That needs your SSH key added to GitHub (`./add_sshkey_github.sh`). If you haven't done that, use `--https`.
+- **"Bad credentials" error:** the token is wrong, expired, or doesn't have access to your repositories. Create a new one with **All repositories** and **Contents: Read**.
+- **Avoid** `export GITHUB_PAT="ghp_..."` or `echo "ghp_..." > ~/.github_pat` typed directly. Both save the token in your shell history. Use Options 1 to 3 instead.
+
 ## How does it know the user? we did not specify --org
 Because the script sends your Personal Access Token with every API call:
 → GitHub decodes the PAT
