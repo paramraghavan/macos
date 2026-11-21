@@ -132,38 +132,16 @@ Also remove uBar from System Settings → General → **Login Items** if it's st
 
 ## Recovering a forgotten Mac login password
 
-> For a forgotten **admin** password, see the fuller [admin_recovery_steps.md](admin_recovery_steps.md).
+Full step-by-step guide: **[admin_recovery_steps.md](admin_recovery_steps.md)** (based on Apple's [If you forgot your Mac login password](https://support.apple.com/en-us/102633)).
 
-Try these in order. Most people succeed with A or B.
+**Part A: reset it on the Mac**
+1. **Start in Recovery:** on Apple silicon, hold the power button until "Loading startup options" → **Options** → **Continue**. On Intel, hold **⌘ + R** while starting.
+2. Click **"Forgot all passwords?"**
+3. Choose the **recovery key** and type it (24 characters, capitals, with dashes). The box is faint: click in the window or press **Tab**, then type.
+4. Answer the prompts (Macintosh HD, allow Deactivate, pick your user), set a **new password**, and allow a new keychain.
+5. **Restart** and log in with the new password.
 
-**A. Reset with your Apple Account (from the login screen)**
-1. Enter a wrong password **3 times**.
-2. Click the option to *reset it using your Apple Account* (or *restart and show password reset options*).
-3. Sign in with your Apple Account, then set a new password.
+**Part B: get the recovery key** (macOS Tahoe 26+)
+Use an iPhone, iPad or other Mac on the **same Apple Account** with iCloud Keychain on → open the **Passwords** app → search **`recovery key`** → open the entry named after your Mac → tap the dots to show the key.
 
-**B. FileVault recovery key**
-If the Mac is encrypted with FileVault and you saved the recovery key (`XXXX-XXXX-...`), the same prompt lets you enter it instead.
-
-**C. Another admin account on the Mac**
-- Log in as the other admin → **System Settings → Users & Groups** → ⓘ next to the locked account → **Reset Password**.
-- Or run the script from that admin account:
-
-  ```bash
-  chmod +x reset-user-password.sh
-  ./reset-user-password.sh
-  ```
-
-**D. Recovery Mode** (when you can't log in at all)
-1. Start Recovery:
-   - **Apple silicon (M1–M4…):** shut down, hold the **power button** until "Loading startup options" → **Options** → **Continue**.
-   - **Intel Mac:** restart holding **⌘ Command + R**.
-2. If you see "Forgot all passwords?", choose it and follow the steps.
-3. Otherwise: **Utilities → Terminal**, type `resetpassword`, press Return, follow the assistant.
-
-> This can't be scripted. You're outside macOS when you need it, so none of the scripts here can run.
-
-**After resetting**
-- If the Mac says it can't unlock the **login keychain** (saved passwords), choose **Create New Keychain**. iCloud Keychain passwords return after you sign in to iCloud.
-- Save the new password in a password manager.
-
-**Last resort:** Recovery → **Erase Mac**, then restore from a Time Machine backup. You'll need the **Apple Account password** to get past Activation Lock. If you can't prove the Mac is yours, only Apple Support (with proof of purchase) can help.
+**If that doesn't work:** use your **Apple Account** instead of the key at step 3; or try Recovery → **Utilities → Terminal → `resetpassword`**; or reset from another admin account (or run [`reset-user-password.sh`](reset-user-password.sh) there). Last resort: Recovery Assistant → **Erase Mac**, which deletes everything.
