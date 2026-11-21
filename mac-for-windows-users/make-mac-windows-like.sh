@@ -202,10 +202,10 @@ if [ "$INSTALL_APPS" -eq 1 ] || [ "$WITH_UBAR" -eq 1 ]; then
   if command -v brew >/dev/null 2>&1; then
     # alt-tab:   Windows-style Alt+Tab with window thumbnails
     # rectangle: Windows-style window snapping (halves, quarters, thirds) with keyboard shortcuts
-    # google-chrome, microsoft-edge, visual-studio-code: familiar apps from Windows
+    # google-chrome, visual-studio-code: familiar apps from Windows
     # ubar (only with --with-ubar): Windows-style taskbar - paid app with a free trial
     CASKS=""
-    [ "$INSTALL_APPS" -eq 1 ] && CASKS="alt-tab rectangle google-chrome microsoft-edge visual-studio-code"
+    [ "$INSTALL_APPS" -eq 1 ] && CASKS="alt-tab rectangle google-chrome visual-studio-code"
     [ "$WITH_UBAR" -eq 1 ] && CASKS="$CASKS ubar"
     for cask in $CASKS; do
       if brew list --cask "$cask" >/dev/null 2>&1; then ok "$cask already installed"

@@ -4,7 +4,7 @@ Helps someone coming from Windows: recover a forgotten Mac login password, and m
 
 | File | What it does |
 |---|---|
-| [`make-mac-windows-like.sh`](make-mac-windows-like.sh) | Applies Windows-style settings (Finder, scrolling, right-click, Dock, snapping, Home/End keys, screenshots) and installs AltTab, Rectangle, Chrome, Edge and VS Code. Optional `--with-ubar` adds the uBar taskbar. Backs up your settings first; `--undo` puts everything back |
+| [`make-mac-windows-like.sh`](make-mac-windows-like.sh) | Applies Windows-style settings (Finder, scrolling, right-click, Dock, snapping, Home/End keys, screenshots) and installs AltTab, Rectangle, Chrome and VS Code. Optional `--with-ubar` adds the uBar taskbar. Backs up your settings first; `--undo` puts everything back |
 | [`reset-user-password.sh`](reset-user-password.sh) | From an admin account, resets the password of *another* user on the Mac |
 | [`admin_recovery_steps.md`](admin_recovery_steps.md) | Step-by-step recovery of a forgotten **admin** login password |
 
@@ -31,6 +31,75 @@ Options can be combined, e.g. `--no-apps --with-ubar` installs only uBar plus th
 
 Don't run it with `sudo`. It changes settings for the user who runs it. If Homebrew (the Mac's package manager, like winget) isn't installed, the script installs it and asks for your Mac password once.
 
+### Two users on one Mac (for example user1 and user2)
+
+> **Note:** Settings are **per user**, so each person runs the script once, in their own account. Apps are installed only **once**, by the admin user who owns Homebrew. **Never use `sudo`**: the script refuses, and settings would go to the root user instead of you.
+
+1. **Admin user who owns Homebrew** (user1), first. This installs the apps for everyone and applies the admin's settings:
+
+   ```bash
+   ./make-mac-windows-like.sh --with-ubar
+   ```
+
+   (Leave off `--with-ubar` if nobody wants uBar.)
+
+2. **Log out, then log in as the other user** (user2), and run this. It applies her settings and hides her Dock for uBar, without touching Homebrew:
+
+   ```bash
+   ./make-mac-windows-like.sh --no-apps --with-ubar
+   ```
+
+   (Leave off `--with-ubar` if she doesn't want uBar.)
+
+3. **As the other user, do the per-user steps the script can't:** open **AltTab**, **Rectangle** and **uBar** from Applications once; allow them in System Settings → Privacy & Security → **Accessibility** (and **Screen Recording** for AltTab and uBar); turn on **Launch at login** in each; then log out and back in.
+
+#### Shortcut: do it all from user2's Terminal, without logging out
+
+> **Note:** If **user1** installed Homebrew (for example user1) and you're logged in as **user2** (for example user2), you can switch to user1 inside Terminal for the install, then come back.
+
+1. **Switch to user1** in Terminal:
+
+   ```bash
+   sudo -u user1 -i
+   ```
+
+   This asks for **user2's** password, and only works if user2 is an **admin**. If user2 isn't an admin, use `su - user1` instead, which asks for **user1's** password.
+   Check with `whoami`: it should print `user1`.
+
+2. **As user1, install the apps** (and apply user1's settings):
+
+   ```bash
+   cd /Users/Shared/mac-for-windows-users && ./make-mac-windows-like.sh --with-ubar
+   ```
+
+3. **Go back to user2:**
+
+   ```bash
+   exit
+   ```
+
+   `whoami` should print `user2` again.
+
+4. **As user2, apply your own settings** without touching Homebrew:
+
+   ```bash
+   cd /Users/Shared/mac-for-windows-users && ./make-mac-windows-like.sh --no-apps
+   ```
+
+   Add `--with-ubar` (`./make-mac-windows-like.sh --no-apps --with-ubar`) if user2 also wants uBar and a hidden Dock.
+
+5. Finish with step 3 above (open the apps once, allow permissions, launch at login), then log out and back in.
+
+Replace `user1` and `user2` with the real account names, for example `sudo -u user1 -i`. The script must be in a folder both users can read, such as `/Users/Shared` (see below). user1's settings take effect the next time user1 logs in.
+
+**Where to keep the script:** the other user can't open files inside your home folder. Copy the folder somewhere you can both read:
+
+```bash
+cp -R ~/dev/macos/mac-for-windows-users /Users/Shared/
+```
+
+Getting **"/opt/homebrew is not writable"**? You ran the full script as the user who **doesn't** own Homebrew. Use `--no-apps` for that user, or fix the ownership as the admin user: `sudo chown -R user1 /opt/homebrew`. That's the only command here that uses sudo.
+
 ### What it changes
 
 | Area | Change |
@@ -41,7 +110,7 @@ Don't run it with `sudo`. It changes settings for the user who runs it. If Homeb
 | Dock | No "recent apps" section, simple minimize animation, dots under running apps |
 | Keyboard | Home/End go to start/end of the **line** and Ctrl+Home/End to top/bottom, in most Mac apps |
 | Screenshots | Saved to `Pictures/Screenshots` |
-| Apps | **AltTab** (Windows-style Alt+Tab with window previews), **Rectangle** (snap windows to halves/quarters with shortcuts), Chrome, Edge, VS Code |
+| Apps | **AltTab** (Windows-style Alt+Tab with window previews), **Rectangle** (snap windows to halves/quarters with shortcuts), Chrome, VS Code |
 | Taskbar (only with `--with-ubar`) | Installs **uBar** and hides the Mac Dock so uBar is the only taskbar (⌘ ⌥ D still shows the Dock) |
 
 ### After running it (only you can do these)
